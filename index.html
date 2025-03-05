@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>House Price Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: green;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>House Price Predictor</h1>
+    <input type="number" id="size" placeholder="Enter house size (sq ft)">
+    <button onclick="predictPrice()">Predict Price</button>
+    <div class="loader" id="loader"></div>
+    <h2 id="result"></h2>
+
+    <script>
+        async function predictPrice() {
+            // Get the house size from the input field
+            const size = document.getElementById('size').value;
+
+            // Validate input
+            if (!size || isNaN(size) || size <= 0) {
+                alert("Please enter a valid house size.");
+                return;
+            }
+
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('result').innerText = '';
+
+            try {
+                // Send a POST request to the Flask app
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ size: parseFloat(size) }),
+                });
+
+                // Parse the JSON response
+                const data = await response.json();
+
+                // Display the predicted price
+                document.getElementById('result').innerText = `Predicted Price: $${data.predicted_price.toFixed(2)}`;
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('result').innerText = "Failed to fetch prediction. Please try again.";
+            } finally {
+                // Hide loader
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
